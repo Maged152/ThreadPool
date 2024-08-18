@@ -4,7 +4,6 @@ project(ThreadPool VERSION 0.0.1)
 # Enable CTest and options only for the main project
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     set(PARENT_PROJECT_NAME ${PROJECT_NAME})
-    option(ThreadPool_BUILD_BENCHMARK "Enable benchmark" ON)
     option(ThreadPool_BUILD_EXAMPLES "Enable examples" ON)
 endif()
 
@@ -31,12 +30,6 @@ target_include_directories(${PROJECT_NAME} INTERFACE
 )
 
 add_library(${namespace}${PROJECT_NAME} ALIAS ${PROJECT_NAME})
-
-# Check if benchmark is enabled
-if(ThreadPool_BUILD_BENCHMARK)
-    message(STATUS "Benchmark for ${PROJECT_NAME} is enabled")
-    add_subdirectory(benchmark)
-endif()
 
 # Check if examples are enabled
 if(ThreadPool_BUILD_EXAMPLES)
