@@ -23,7 +23,6 @@ long ThreadPool_ArrSum (const int* arr, const int arr_size, qlm::ThreadPool& poo
     const int thread_tail = arr_size - thread_len * threads;
 
     std::vector<std::future<long>> futures(threads);
-    long res = 0;
 
     // launch the threads
 	int next_idx = 0;
@@ -38,6 +37,7 @@ long ThreadPool_ArrSum (const int* arr, const int arr_size, qlm::ThreadPool& poo
     futures[threads - 1] = pool.Submit(ArrSum, &arr[next_idx], thread_len + thread_tail);
 
     // wait for the threads to finish
+    long res = 0;
     for (size_t i = 0; i < threads; i++)
     {
         res += futures[i].get();
@@ -48,6 +48,7 @@ long ThreadPool_ArrSum (const int* arr, const int arr_size, qlm::ThreadPool& poo
 
 int main()
 {
+    std::cout << "Start array_sum example\n";
     constexpr int arr_size = 100000000;
     const uint32_t num_threads = std::thread::hardware_concurrency();
     
@@ -67,14 +68,14 @@ int main()
 
     const float single_th_time = timer.Duration();
 
-    // thread pool code
+    // multi thread code
     // create thread pool
     qlm::ThreadPool pool{ num_threads };
 
     timer.Start();
     const long multi_th = ThreadPool_ArrSum(arr, arr_size, pool);
     timer.End();
-
+    
     const float multi_th_time = timer.Duration();
 
     if (multi_th != single_th)
@@ -93,11 +94,13 @@ int main()
     if (multi_th_time < single_th_time)
     {
         std::cout << "Thread Pool faster by "
-                  << ((single_th_time - multi_th_time) / multi_th_time) * 100 << " %\n";
+                  << ((single_th_time - multi_th_time) / single_th_time) * 100 << " %\n";
     }
     else
     {
         std::cout << "Thread Pool slower by "
                   << ((multi_th_time -single_th_time) /single_th_time) * 100 << " %\n";
     }
+
+    delete[] arr;
 }
