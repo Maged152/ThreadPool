@@ -38,7 +38,7 @@ long ThreadPool_ArrSum (const int* arr, const int arr_size, qlm::ThreadPool& poo
 
     // wait for the threads to finish
     long res = 0;
-    for (size_t i = 0; i < threads; i++)
+    for (int i = 0; i < threads; i++)
     {
         res += futures[i].get();
     }
