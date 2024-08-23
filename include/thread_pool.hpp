@@ -10,46 +10,97 @@
 
 namespace qlm
 {
+	/**
+	 * @brief A thread pool class that manages a pool of worker threads.
+	 * 
+	 * The `ThreadPool` class allows you to submit tasks that will be executed asynchronously by a fixed number of worker threads.
+	 */
 	class ThreadPool
 	{
 	private:
-		std::vector<std::thread> workers;
-		ThreadSafeQueue<std::function<void()>> task_queue;
+		std::vector<std::thread> workers;                       ///< Vector of worker threads.
+		ThreadSafeQueue<std::function<void()>> task_queue;      ///< Queue for storing tasks to be executed by the worker threads.
 
-		std::atomic_bool kill;
-		std::atomic_bool stop;
+		std::atomic_bool kill;                                  ///< Flag to indicate if the thread pool should kill all threads immediately.
+		std::atomic_bool stop;                                  ///< Flag to indicate if the thread pool should stop processing tasks after current ones finish.
 
-		mutable std::mutex mut;
-		std::condition_variable cv;
-		
-		uint32_t thread_count;
+		mutable std::mutex mut;                                 ///< Mutex for synchronizing access to the task queue.
+		std::condition_variable cv;                             ///< Condition variable to notify worker threads of new tasks.
+
+		uint32_t thread_count;                                  ///< Number of worker threads in the pool.
+
 	public:
-		uint32_t used_threads;
-		
+		uint32_t used_threads;                                  ///< Number of threads currently in use.
+
 	private:
+		/**
+		 * @brief The worker thread function.
+		 * 
+		 * This function is executed by each worker thread. It waits for tasks to be added to the queue and executes them.
+		 */
 		void WorkerThread();
 
 	public:
+		// Disable copy and move constructors and assignment operators
 		ThreadPool(const ThreadPool&) = delete;
 		ThreadPool(ThreadPool&&) = delete;
 		ThreadPool& operator=(const ThreadPool&) = delete;
 		ThreadPool& operator=(ThreadPool&&) = delete;
 
+		/**
+		 * @brief Constructs a thread pool with the specified number of threads.
+		 * 
+		 * @param thread_count The number of threads in the pool. Defaults to the number of hardware concurrency.
+		 */
 		ThreadPool(const uint32_t thread_count = std::thread::hardware_concurrency());
 
+		/**
+		 * @brief Destructor for the thread pool.
+		 * 
+		 * Joins all worker threads and stops the thread pool.
+		 */
 		~ThreadPool();
+
 	public:
-		// number of working threads
+		/**
+		 * @brief Returns the number of worker threads in the pool.
+		 * 
+		 * @return The number of threads in the pool.
+		 */
 		uint32_t Size() const;
-		// are the threads active
+
+		/**
+		 * @brief Checks if the thread pool is still running.
+		 * 
+		 * @return true if the thread pool is running; false otherwise.
+		 */
 		bool Running() const;
-		// stop and process all delegated tasks
+
+		/**
+		 * @brief Stops the thread pool and processes all remaining tasks.
+		 * 
+		 * This function stops the pool from accepting new tasks but allows the currently queued tasks to finish execution.
+		 */
 		void Stop();
-		// stop and drop all tasks remained in queue
+
+		/**
+		 * @brief Stops the thread pool and discards all remaining tasks.
+		 * 
+		 * This function stops the pool from accepting new tasks and discards all tasks remaining in the queue.
+		 */
 		void Kill();
-		// submit task
+
+		/**
+		 * @brief Submits a task to be executed by the thread pool.
+		 * 
+		 * @tparam F The type of the function or callable object.
+		 * @tparam Args The types of the arguments to pass to the function.
+		 * @param fun The function or callable object to execute.
+		 * @param args The arguments to pass to the function.
+		 * @return A `std::future` object representing the result of the task.
+		 */
 		template <class F, class... Args>
-		std::future<std::invoke_result_t<std::decay_t<F>, std::decay_t<Args>...>>  Submit(F&& fun, Args &&...args);
+		std::future<std::invoke_result_t<std::decay_t<F>, std::decay_t<Args>...>> Submit(F&& fun, Args&&... args);
 	};
 
 
