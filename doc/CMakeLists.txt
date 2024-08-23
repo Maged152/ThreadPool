@@ -12,6 +12,8 @@ if (DOXYGEN_FOUND)
 
     # Set project-specific Doxygen settings
     set(DOXYGEN_PROJECT_NAME ${PROJECT_NAME})
+    set(DOXYGEN_PROJECT_BRIEF "Thread pool in C++")
+    set(DOXYGEN_INPUT "include")
     set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     set(DOXYGEN_GENERATE_HTML "YES")
     set(DOXYGEN_HTML_OUTPUT "${CMAKE_BINARY_DIR}/html")
@@ -19,6 +21,7 @@ if (DOXYGEN_FOUND)
     list(APPEND DOXYGEN_HTML_EXTRA_STYLESHEET
         ${EXTRA_STRYLESHEET0}
         ${EXTRA_STRYLESHEET1})
+
 
     doxygen_add_docs(documentation "${CMAKE_SOURCE_DIR}/include" COMMENT "Generating documentation")
 else ()
