@@ -8,6 +8,7 @@ ThreadPool is a header-only thread pool library for C++. It consists of three he
 - **No external dependencies**: Pure C++ implementation with no external dependencies.
 
 ## Headers
+You can access the three classes using the namespace `qlm`.
 
 - **`timer.hpp`**: Utility for measuring execution time.
 - **`thread_pool.hpp`**: Core thread pool implementation.
@@ -20,7 +21,7 @@ ThreadPool is a header-only thread pool library for C++. It consists of three he
 
 /*
  assume we have a function called func and takes parameters p0 and p1
- It return int
+ It returns int
 */
 
 const int num_threads = 5;
