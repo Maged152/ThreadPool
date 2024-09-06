@@ -52,7 +52,7 @@ int main()
     constexpr int arr_size = 100000000;
     const uint32_t num_threads = std::thread::hardware_concurrency();
     
-    qlm::Timer<qlm::usec> timer;
+    qlm::Timer<qlm::usec> timer_st, timer_mt;
 
     // input array to be summed
     int* arr = new int[arr_size];
@@ -62,21 +62,21 @@ int main()
     }
 
     // single thread code
-    timer.Start();
+    timer_st.Start();
     const long single_th = ArrSum(arr, arr_size);
-    timer.End();
+    timer_st.End();
 
-    const float single_th_time = timer.Duration();
+    const float single_th_time = timer_st.Elapsed();
 
     // multi thread code
     // create thread pool
     qlm::ThreadPool pool{ num_threads };
 
-    timer.Start();
+    timer_mt.Start();
     const long multi_th = ThreadPool_ArrSum(arr, arr_size, pool);
-    timer.End();
+    timer_mt.End();
     
-    const float multi_th_time = timer.Duration();
+    const float multi_th_time = timer_mt.Elapsed();
 
     if (multi_th != single_th)
     {
@@ -88,8 +88,8 @@ int main()
     }
 
     // Output the timings
-    std::cout << "Single-threaded time: " << single_th_time << " micro seconds\n";
-    std::cout << "Multi-threaded time: " << multi_th_time << " micro seconds\n";
+    std::cout << "Single-threaded time: " << timer_st.ElapsedString() << "\n";
+    std::cout << "Multi-threaded time: " << timer_mt.ElapsedString() << "\n";
 
     if (multi_th_time < single_th_time)
     {
