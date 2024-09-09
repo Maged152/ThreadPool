@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cmath>
+#include <omp.h>
+#include <random>
 #include "thread_pool.hpp"
 
 long ArrSum (const int* ptr, const int size)
@@ -10,6 +12,17 @@ long ArrSum (const int* ptr, const int size)
         res += ptr[i];
     }
 
+    return res;
+}
+
+long OMP_ArrSum (const int* ptr, const int size)
+{
+    long res = 0;
+    #pragma omp parallel for reduction(+ : res) 
+    for (int i = 0; i < size; i++)
+    {
+        res += ptr[i];
+    }
     return res;
 }
 
@@ -52,55 +65,58 @@ int main()
     constexpr int arr_size = 100000000;
     const uint32_t num_threads = std::thread::hardware_concurrency();
     
-    qlm::Timer<qlm::usec> timer_st, timer_mt;
+    qlm::Timer<qlm::usec> st_timer, tp_timer, omp_timer;
 
     // input array to be summed
     int* arr = new int[arr_size];
+    std::random_device rnd;
+    std::mt19937 gen(rnd());
+    std::uniform_int_distribution<int> dist(-100, 100);
     for (int i = 0; i < arr_size; i++)
     {
-        arr[i] = i;
+        arr[i] = dist(gen);
     }
 
     // single thread code
-    timer_st.Start();
-    const long single_th = ArrSum(arr, arr_size);
-    timer_st.End();
+    st_timer.Start();
+    const long st_res = ArrSum(arr, arr_size);
+    st_timer.End();
 
-    const float single_th_time = timer_st.Elapsed();
+    const float st_time = st_timer.Elapsed();
+
+    // omp code
+    omp_timer.Start();
+    const long omp_res = OMP_ArrSum(arr, arr_size);
+    omp_timer.End();
+
+    const float omp_time = omp_timer.Elapsed();
 
     // multi thread code
     // create thread pool
     qlm::ThreadPool pool{ num_threads };
 
-    timer_mt.Start();
-    const long multi_th = ThreadPool_ArrSum(arr, arr_size, pool);
-    timer_mt.End();
+    tp_timer.Start();
+    const long tp_res = ThreadPool_ArrSum(arr, arr_size, pool);
+    tp_timer.End();
     
-    const float multi_th_time = timer_mt.Elapsed();
+    const float tp_time = tp_timer.Elapsed();
 
-    if (multi_th != single_th)
+    if (tp_res != st_res)
     {
-        std::cout << "The results are different!: " << multi_th << " vs " << single_th << "\n";
+        std::cout << "The results are different!: " << tp_res << " vs " << st_res << "\n";
     }
     else
     {
-        std::cout << "The results are the same: " << multi_th << "\n";
+        std::cout << "The results are the same: " << tp_res << "\n";
     }
 
     // Output the timings
-    std::cout << "Single-threaded time: " << timer_st.ElapsedString() << "\n";
-    std::cout << "Multi-threaded time: " << timer_mt.ElapsedString() << "\n";
+    std::cout << "Single-threaded time: " << st_timer.ElapsedString() << "\n";
+    std::cout << "Thread pool time: " << tp_timer.ElapsedString() << "\n";
+    std::cout << "OMP time: " << omp_timer.ElapsedString() << "\n";
 
-    if (multi_th_time < single_th_time)
-    {
-        std::cout << "Thread Pool faster by "
-                  << ((single_th_time - multi_th_time) / single_th_time) * 100 << " %\n";
-    }
-    else
-    {
-        std::cout << "Thread Pool slower by "
-                  << ((multi_th_time -single_th_time) /single_th_time) * 100 << " %\n";
-    }
+    std::cout << "Thread Pool is " << ((tp_time - st_time) / st_time) * 100 << "% than single thread code\n";
+    std::cout << "Thread Pool is " << ((tp_time - omp_time) / omp_time) * 100 << "% than single thread code\n";
 
     delete[] arr;
 }

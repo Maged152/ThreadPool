@@ -14,7 +14,9 @@
 			"generator": "MinGW Makefiles",
 			"cacheVariables": {
 				"CMAKE_C_COMPILER": "gcc",
-				"CMAKE_CXX_COMPILER": "g++"
+				"CMAKE_CXX_COMPILER": "g++",
+				"CMAKE_BUILD_TYPE": "Release",
+        		"CMAKE_CXX_FLAGS_RELEASE": "-O3"
 			}
 		},
 		{
