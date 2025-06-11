@@ -108,7 +108,7 @@ namespace qlm
 		 */
 		std::string ElapsedString() const
 		{
-			return std::to_string(this->Elapsed()) + GetType();
+			return std::to_string(static_cast<int>(this->Elapsed())) + GetType();
 		}
 	};
 }
